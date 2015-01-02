@@ -58,6 +58,7 @@ sub forbid {
 
     my $gr = $self->group_of($value);
     my $ret = $gr->forbid($value => @n);
+    return unless $ret;
     $self->solved->{$_} = $ret->{$_} for keys %$ret;
     $self->unsolved( $self->unsolved - scalar keys %$ret );
     return $ret;
@@ -68,6 +69,7 @@ sub restrict {
 
     my $gr = $self->group_of($value);
     my $ret = $gr->restrict($value => @n);
+    return unless $ret;
     $self->solved->{$_} = $ret->{$_} for keys %$ret;
     $self->unsolved( $self->unsolved - scalar keys %$ret );
     return $ret;
@@ -89,6 +91,15 @@ sub right_from {
     return [$self->where($value)]->[0]+1 .. $self->size-1;
 };
 
+sub list {
+    my $self = shift;
+    return keys %{ $self->id_lookup };
+};
+
+sub to_string {
+    my $self = shift;
+    return join "\n", map { $_->to_string } @{ $self->groups };
+};
 
 
 1;

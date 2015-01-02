@@ -38,7 +38,7 @@ my %dispatch = (
 );
 
 sub parse {
-    my ($class, $max, $str) = @_;
+    my ($class, $str) = @_;
 
     my ($sign, @ids) = $str =~ /(\S+)/g;
     my $todo = $dispatch{$sign};

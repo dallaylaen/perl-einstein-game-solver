@@ -43,6 +43,10 @@ is ($group->unsolved, 5, "Unsolved decreased");
 
 is_deeply( $group->what(3), ["envy"], "What works");
 
+ok (!$group->restrict(wrath => -1), "Restrict to nowhere won't work");
+ok (!$group->forbid( envy => 3 ), "Cannot forbid");
+ok (!$group->restrict("greed"), "Empty restrict !ok");
+
 # cloning
 
 my $new = $group->clone;

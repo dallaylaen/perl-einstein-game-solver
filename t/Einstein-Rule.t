@@ -8,7 +8,7 @@ use Einstein::Rule;
 
 my $board = Board->new;
 
-my @rules = map { Einstein::Rule->parse( 6, $_ ) } 
+my @rules = map { Einstein::Rule->parse( $_ ) } 
     "< foo bar",
     "= iii lust",
     "2 a b",
