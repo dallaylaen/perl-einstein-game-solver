@@ -10,6 +10,7 @@ use Einstein::Group;
 # Groups of identifiers that cannot occupy the same cell
 has groups     => is => "ro", default => sub { [] };
 has id_lookup  => is => "ro", default => sub { {} };
+has solved     => is => "ro", default => sub { {} };
 
 sub init {
     my ($self, @ids) = @_;
@@ -37,8 +38,13 @@ sub clone {
     my @newgr = map { $_->clone } @{ $self->groups };
 
     return __PACKAGE__->new(
-        %$self, groups => \@newgr,
+        %$self, groups => \@newgr, solved => {%{ $self->solved }},
     );
+};
+
+sub is_solved {
+    my ($self, $id) = @_;
+    return exists $self->solved->{$id};
 };
 
 sub group_of {
@@ -51,10 +57,9 @@ sub forbid {
     my ($self, $value, @n) = @_;
 
     my $gr = $self->group_of($value);
-    my $unsolved = $gr->unsolved;
     my $ret = $gr->forbid($value => @n);
-    $self->unsolved( $self->unsolved - $unsolved + $gr->unsolved ); 
-            # apply unsolved delta
+    $self->solved->{$_} = $ret->{$_} for keys %$ret;
+    $self->unsolved( $self->unsolved - scalar keys %$ret );
     return $ret;
 };
 
@@ -62,10 +67,9 @@ sub restrict {
     my ($self, $value, @n) = @_;
 
     my $gr = $self->group_of($value);
-    my $unsolved = $gr->unsolved;
     my $ret = $gr->restrict($value => @n);
-    $self->unsolved( $self->unsolved - $unsolved + $gr->unsolved ); 
-            # apply unsolved delta
+    $self->solved->{$_} = $ret->{$_} for keys %$ret;
+    $self->unsolved( $self->unsolved - scalar keys %$ret );
     return $ret;
 };
 

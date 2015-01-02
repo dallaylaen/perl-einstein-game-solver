@@ -20,6 +20,10 @@ is_deeply( $field->forbid( a => 1,3,4 ), {}, "forbid again => no work" );
 $field->restrict (lust => 5);
 is_deeply( [ $field->right_from("lust") ], [6], "right from");
 
+ok ( $field->is_solved( "lust" ), "is_solved added");
+ok (!$field->is_solved( "sloth" ), "is_solved not added for non_solved value");
+is ($field->solved->{lust}, 5, "Lust reported correctly in solved");
+
 my $new = $field->clone;
 
 $new->restrict( iv => 4 );
