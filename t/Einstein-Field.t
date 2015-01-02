@@ -15,7 +15,7 @@ my @ids = ( ['a'..'g'], [qw(i ii iii iv v vi vii)],
 $field->init( @ids );
 
 ok( $field->forbid( a => 1,3,4 ), "forbid" );
-ok(!$field->forbid( a => 1,3,4 ), "forbid again => no work" );
+is_deeply( $field->forbid( a => 1,3,4 ), {}, "forbid again => no work" );
 
 $field->restrict (lust => 5);
 is_deeply( [ $field->right_from("lust") ], [6], "right from");

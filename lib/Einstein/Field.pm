@@ -55,7 +55,7 @@ sub forbid {
     my $ret = $gr->forbid($value => @n);
     $self->unsolved( $self->unsolved - $unsolved + $gr->unsolved ); 
             # apply unsolved delta
-    return $ret ? $self : ();
+    return $ret;
 };
 
 sub restrict {
@@ -66,7 +66,7 @@ sub restrict {
     my $ret = $gr->restrict($value => @n);
     $self->unsolved( $self->unsolved - $unsolved + $gr->unsolved ); 
             # apply unsolved delta
-    return $ret ? $self : ();
+    return $ret;
 };
 
 sub where {

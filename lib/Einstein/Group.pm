@@ -41,17 +41,26 @@ sub forbid {
     my %change;
     foreach my $i( @n ) {
         my $cell = $cells->[$i];
-        ref $cell or next;
+        if ( !ref $cell ) {
+            $cell eq $value and return (); # trying to forbid already set value
+            next;
+        };
         $cell->{$value} and next;
         $change{$i}++;
     };
-    return unless %change;
 
     # calculate what left after all
-    my @left = grep { 
-            !$change{$_} and ref $cells->[$_] and !$cells->[$_]{$value};
-        } 0 .. $self->size-1;
-    return unless @left; # illegal
+    my @left;
+    foreach (0 .. $self->size-1) { 
+        $change{$_} and next;
+        if (ref $cells->[$_]) {
+            !$cells->[$_]{$value} and push @left, $_;
+        } else {
+            $cells->[$_] eq $value and return { }; # already there, nothing changed
+        };
+    };
+    return {} unless %change; # nothing to be done
+    return unless @left;   # illegal
 
     my %result;
     # put if only one possible cell left

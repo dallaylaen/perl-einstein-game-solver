@@ -24,13 +24,14 @@ is_deeply ( [$group->invert( 1, 3, 5 )], [0,2,4,6], "Inversion" );
 is_deeply ( [$group->where("envy")], [0..6], "Where" );
 
 # r/w
-ok ($group->restrict( gluttony => 5 ), "put works"); 
+is_deeply ($group->restrict( gluttony => 5 ), { gluttony => 5 }, "put works"); 
 is ($group->unsolved, 6, "Unsolved decreased");
 is_deeply( [$group->where( "gluttony")], [5], "Where strict");
 is_deeply( [$group->where( "envy")], [0..4, 6], "Where with hole");
 
 ok (!$group->restrict( gluttony => 3 ), "second put !works"); 
-ok (!$group->restrict( gluttony => 5 ), "second put !works");
+is_deeply ( $group->restrict( gluttony => 5 ), {}, 
+    "second put to the same place works, but nothing changed");
 
 ok ( $group->restrict( envy => 2,3 ), "Restricting envy" );
 is_deeply ( [$group->where( "envy" )], [2,3], "Restricting worked" );
