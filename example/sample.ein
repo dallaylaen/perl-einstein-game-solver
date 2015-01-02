@@ -1,0 +1,32 @@
+size 6
+__BOARD__
+1. 2. 3. 4. 5. 6.
+a b c d e f
+i ii iii iv v vi
+. : .: :: :.: :::
+/\ \/ # <> home shield
++ - x % = sqrt
+__RULES__
+= % 1.
+= f ii
+= /\ v
+3 e i x
+2 d iv
+< :: ii
+3 = + shield
+3 . d b
+< ii 6.
+2 2. -
+2 b <>
+2 d 2.
+< shield home
+< :.: e
+2 f .:
+2 : :::
+< 3. vi
+< 4. /\
+3 = 4. :.:
+< i :
+3 c :: \/
+2 1. x
+2 6. 4.
