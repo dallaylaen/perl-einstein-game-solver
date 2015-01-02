@@ -12,6 +12,7 @@ use Carp;
 has cells => is => "ro", lazy => 1, default => sub { 
         my @empty; push @empty, {} for 1..$_[0]->size; \@empty
     };
+has on_solve => is => "rw";
 
 sub clone {
     my $self = shift;
@@ -21,19 +22,8 @@ sub clone {
 # put and forbid return $self || ()
 # so we can do something like 
 # @foo = map { ...->clone->put/forbid(...) } @bar
-# $self is returned IFF the change was valid, and DID actually change anything
-
-sub put {
-    my ($self, $value, $n) = @_;
-
-    $self->validate( $value => $n )
-        unless $Einstein::clean;
-
-    my $cell = $self->cells->[$n];
-    return if !ref $cell;
-    return if $cell->{$value};
-    return $self->forbid( $value, 0..$n-1, $n+1..$self->size - 1 );
-};
+# return () if failed, or { id => fixed_position, id => fixed_position ... } 
+#       if succeeded
 
 sub restrict {
     my ($self, $value, @n) = @_;
@@ -46,9 +36,11 @@ sub forbid {
     $self->validate( $value => @n )
         unless $Einstein::clean;
 
+    my $cells = $self->cells;
+
     my %change;
     foreach my $i( @n ) {
-        my $cell = $self->cells->[$i];
+        my $cell = $cells->[$i];
         ref $cell or next;
         $cell->{$value} and next;
         $change{$i}++;
@@ -57,36 +49,44 @@ sub forbid {
 
     # calculate what left after all
     my @left = grep { 
-            !$change{$_} and ref $self->cells->[$_] and !$self->cells->[$_]{$value};
+            !$change{$_} and ref $cells->[$_] and !$cells->[$_]{$value};
         } 0 .. $self->size-1;
     return unless @left; # illegal
 
+    my %result;
     # put if only one possible cell left
     if (@left == 1) {
-        $self->cells->[ $left[0] ] = $value;
-        $self->unsolved( $self->unsolved-1 );
+        $self->_final( $value => $left[0], $cells );
+        $result{$value} = $left[0];
     };
-    $self->cells->[$_]{$value}++ for keys %change;
+    $cells->[$_]{$value}++ for keys %change;
 
     # GC everything else
-    foreach my $i ( 1 .. $self->size - 1 ) {
-        my $cell =  $self->cells->[$i];
-        next unless ref $cell;
-        if (scalar keys %$cell == $self->size - 1) {
-            my @only = grep { !$cell->{$_} } $self->list;
-            confess "ILLEGAL in forbid(): 1 != @only"
-                if (@only != 1);
-            if (!$self->restrict( $only[0] => $i ) ) {
-                # If we are here, there are NO OTHER cells where only[0] can exist
-                # Work around bad design and set it manually.
-                # Somebody has to rewrite this shit.
-                $self->cells->[$i] = $only[0];
-                $self->unsolved( $self->unsolved-1 );
-            };
+    # if a cell now only allows one value, set it there & cascade
+    for (my $i = $self->size; $i-->0; ) {
+        ref $cells->[$i] or next;
+        my $count = scalar keys $cells->[$i];
+        if ($count == $self->size - 1) {
+            # we have the ONLY value in a cell.
+            # fix it, forbid everywhere else, and start all over again
+            my @only = grep { !$cells->[$i]{$_} } $self->list;
+            # this means we're SERIOUSLY broken
+            @only == 1 or confess ("ILLEGAL STATE in forbid(): must be 1 but @only found");
+            $self->_final( $only[0], $i, $cells );
+            $result{ $only[0] } = $i;
+            ref $_ and $_->{$only[0]}++ for @$cells;
+            $i = $self->size;
         };
     };
 
-    return $self;
+    return \%result;
+};
+
+sub _final {
+    my ($self, $value, $pos, $cells) = @_;
+    $cells ||= $self->cells;
+    $cells->[$pos] = $value;
+    $self->unsolved( $self->unsolved - 1 );
 };
 
 sub where {
