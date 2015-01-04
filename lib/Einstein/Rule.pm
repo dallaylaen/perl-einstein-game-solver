@@ -123,10 +123,12 @@ sub apply {
     return $cell - $self->distance, $cell + $self->distance;
 };
 
-sub sign {
+sub sign { "d" };
+
+sub to_string {
     my $self = shift;
-    return 2 if $self->distance == 1;
-    return "d ".$self->distance;
+    return join " ", $self->distance == 1 ? ("2") : ("d", $self->distance)
+        , $self->src, $self->dst;
 };
 
 1;
