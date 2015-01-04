@@ -15,7 +15,7 @@ has search_order => is => "rw";
 
 sub init {
     my ($self, %opt) = @_;
-    
+
     my $size = $opt{size} or die "No size provided";
 
     my $board = Einstein::Field->new( size => $size );
@@ -25,10 +25,16 @@ sub init {
     $rules->add_rules( $opt{rules} );
 
     # check that keys are the same
-    my @bad = grep { !exists $board->id_lookup->{ $_ } } $rules->list; 
+    my @bad = grep { !exists $board->id_lookup->{ $_ } } $rules->list;
     die "Unknown keys @bad in ruleset" if @bad;
 
     $self->board($board);
+    $self->rules($rules);
+
+    my @xrules = $self->join_rules;
+    $rules = Einstein::RuleSet->new;
+    $rules->add_rules( \@xrules );
+    warn "Extended ruleset: ".join ", ", map { "'$_'" } @xrules;
     $self->rules($rules);
 
     $self;
@@ -124,6 +130,31 @@ sub select_probe {
         } @list;
 
     return \@list;
+};
+
+
+
+# foreach rules such that x-(rule1)->y, y-(rule2)->z
+# create a new rule x-(rule1+rule2)->z unless such already exists
+sub join_rules {
+    my $self = shift;
+
+    my @rule_q = map { $self->rules->get_rules($_) } $self->rules->list;
+    my %seen;
+    my @ret;
+
+    while (my $first = shift @rule_q) {
+        $seen{ $first }++ and next;
+        foreach my $second ( $self->rules->get_rules( $first->dst ) ) {
+            next if $second->dst eq $first->src; # avoid mirroring
+            my $same = $self->board->group_n_of( $first->src )
+                eq $self->board->group_n_of( $second->dst );
+            push @rule_q, Einstein::Rule->join( $first, $second, $same );
+        };
+        push @ret, $first;
+    };
+
+    return @ret;
 };
 
 1;

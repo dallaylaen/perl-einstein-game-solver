@@ -67,6 +67,40 @@ sub parse {
     return @res;
 };
 
+my %join_action = (
+    "> >" => sub { create( Left => $_[0],$_[1] ), create( Right => $_[1],$_[0] ) },
+    "< <" => sub { create( Right => $_[0],$_[1] ), create( Left => $_[1],$_[0] ) },
+    "= =" => sub { create( Same => $_[0], $_[1] ) },
+    "= >" => sub { create( Left => $_[0],$_[1] ), create( Right => $_[1],$_[0] ) },
+    "= <" => sub { create( Right => $_[0],$_[1] ), create( Left => $_[1],$_[0] ) },
+    "same d d" => sub {
+        $_[2]->distance == $_[3]->distance or return ();
+        create ( Distance => $_[0], $_[1], distance => 2*$_[2]->distance ),
+        create ( Distance => $_[1], $_[0], distance => 2*$_[2]->distance ),
+    },
+    "same d <" => sub {
+        $_[2]->distance == 1 or return ();
+        create( Right => $_[0],$_[1] ), create( Left => $_[1],$_[0] )
+    },
+    "same d >" => sub {
+        $_[2]->distance == 1 or return ();
+        create( Left => $_[0],$_[1] ), create( Right => $_[1],$_[0] )
+    },
+);
+
+sub join {
+    my ($class, $first, $second, $same) = @_;
+    my $sign = join " ", $first->sign, $second->sign;
+    my @ret;
+    if (my $todo = $join_action{$sign}) {
+        push @ret, $todo->( $first->src, $second->dst, $first, $second );
+    };
+    if ($same and my $todo = $join_action{"same $sign"}) {
+        push @ret, $todo->( $first->src, $second->dst, $first, $second );
+    };
+    return @ret;
+};
+
 sub to_string {
     my $self = shift;
     return sprintf "%s %s %s", $self->sign, $self->src, $self->dst;

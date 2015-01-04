@@ -20,7 +20,7 @@ sub init {
     foreach my $gr (@ids) {
         my @group = @$gr;
         $seen{$_}++ and die "Duplicate identifier $_" for @group;
-    
+
         @group > $self->size and die "Group too large: @group";
         my $storage = Einstein::Group->new( size => $self->size, ids => \@group );
         push @{ $self->groups }, $storage;

@@ -8,7 +8,7 @@ has set => is => "rw", default => sub { {} };
 sub add_rules {
     my ( $self, $lines ) = @_;
 
-    my @rules = map { Einstein::Rule->parse($_) } @$lines;
+    my @rules = map { ref $_ ? $_ : Einstein::Rule->parse($_) } @$lines;
 
     foreach (@rules) {
         push @{ $self->set->{ $_->src } }, $_;

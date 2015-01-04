@@ -3,13 +3,13 @@ use Moo;
 
 extends 'Einstein::Storage';
 
-# Group is a set of <= n values in n cells. 
+# Group is a set of <= n values in n cells.
 # Values can't occupy the same cell.
 
 use Storable qw(dclone);
 use Carp;
 
-has cells => is => "ro", lazy => 1, default => sub { 
+has cells => is => "ro", lazy => 1, default => sub {
         my @empty; push @empty, {} for 1..$_[0]->size; \@empty
     };
 has on_solve => is => "rw";
@@ -20,9 +20,9 @@ sub clone {
 };
 
 # put and forbid return $self || ()
-# so we can do something like 
+# so we can do something like
 # @foo = map { ...->clone->put/forbid(...) } @bar
-# return () if failed, or { id => fixed_position, id => fixed_position ... } 
+# return () if failed, or { id => fixed_position, id => fixed_position ... }
 #       if succeeded
 
 sub restrict {
@@ -51,7 +51,7 @@ sub forbid {
 
     # calculate what left after all
     my @left;
-    foreach (0 .. $self->size-1) { 
+    foreach (0 .. $self->size-1) {
         $change{$_} and next;
         if (ref $cells->[$_]) {
             !$cells->[$_]{$value} and push @left, $_;
