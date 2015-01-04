@@ -1,2 +1,4 @@
 .*.swp
 cover_db
+*.out
+nytprof

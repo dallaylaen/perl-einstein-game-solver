@@ -4,12 +4,19 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
+use Getopt::Long;
+use Digest::MD5 qw(md5_hex);
 
 use FindBin qw($Bin);
 use lib "$Bin/../lib";
 use Einstein::Solver;
 
 $Einstein::clean++;
+
+my %opt;
+GetOptions (
+    fast => \$opt{fast}
+) or die "Bad options";
 
 defined ($_ = <>) or die "Failed to read stdin: $!";
 
@@ -40,14 +47,25 @@ while (<>) {
     push @rules, $_;
 };
 
+my $oldkey;
+while (<>) {
+    /key\s+([a-z0-9]+)/ and $oldkey = $1;
+};
+
 $SIG{__DIE__} = \&Carp::confess;
 my $solver = Einstein::Solver->new;
-$solver->init( size => $size, ids => \@ids, rules => \@rules );
+$solver->init( %opt, size => $size, ids => \@ids, rules => \@rules );
 
 my $answer = $solver->search;
 
 if ($answer) {
     print $answer->to_string, "\n";
+    my $key = md5_hex($answer->to_string);
+    print "Answer key: $key\n";
+    if (defined $oldkey and $oldkey ne $key) {
+        print "Key doesn't match!\n";
+        exit 1;
+    };
 } else {
     print "Unsolvable!\n";
 };

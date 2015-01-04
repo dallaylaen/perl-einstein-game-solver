@@ -31,11 +31,15 @@ sub init {
     $self->board($board);
     $self->rules($rules);
 
-    my @xrules = $self->join_rules;
-    $rules = Einstein::RuleSet->new;
-    $rules->add_rules( \@xrules );
-    warn "Extended ruleset: ".join ", ", map { "'$_'" } @xrules;
-    $self->rules($rules);
+    if ($opt{fast}) {
+        my @orules = map { $rules->get_rules($_) } $rules->list;
+        my @xrules = $self->join_rules;
+        $rules = Einstein::RuleSet->new;
+        $rules->add_rules( \@xrules );
+        warn "Original ruleset: ".join ", ", map { "'$_'" } @orules;
+        warn "Extended ruleset: ".join ", ", map { "'$_'" } @xrules;
+        $self->rules($rules);
+    };
 
     $self;
 };
@@ -149,7 +153,10 @@ sub join_rules {
             next if $second->dst eq $first->src; # avoid mirroring
             my $same = $self->board->group_n_of( $first->src )
                 eq $self->board->group_n_of( $second->dst );
-            push @rule_q, Einstein::Rule->join( $first, $second, $same );
+            warn "joining $first with $second, same=$same";
+            my @ctx = Einstein::Rule->join( $first, $second, $same );
+            warn "joined $first with $second => @ctx" if @ctx;
+            push @rule_q, @ctx;
         };
         push @ret, $first;
     };
