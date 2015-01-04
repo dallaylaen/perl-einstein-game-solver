@@ -101,11 +101,29 @@ sub select_probe {
 
     my @list = $self->board->list;
 
-    @list = sort { scalar $self->rules->get_rules($b) <=> scalar $self->rules->get_rules( $a ) } @list;
+    my %n_rules;
+    my %n_rules_group;
+    my %group;
+    my %n_rules_2nd;
+
+    foreach (@list) {
+        $group{$_} = $self->board->group_n_of($_);
+        my @r = $self->rules->get_rules($_);
+        $n_rules{$_} = scalar @r;
+        $n_rules_group{ $group{$_} } += scalar @r;
+    };
+    foreach my $this (@list) {
+        my @r = $self->rules->get_rules($this);
+        foreach my $rule( @r ) {
+            $n_rules_2nd{ $rule->dst } += $n_rules{$this};
+        };
+    };
+
+    @list = sort {
+            ($n_rules_2nd{$b} || 0) <=> ($n_rules_2nd{$a} || 0)
+        } @list;
 
     return \@list;
 };
 
-
-
-
+1;

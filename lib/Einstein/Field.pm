@@ -47,6 +47,12 @@ sub is_solved {
     return exists $self->solved->{$id};
 };
 
+sub group_n_of {
+    my ($self, $value) = @_;
+
+    return $self->id_lookup->{$value};
+};
+
 sub group_of {
     my ($self, $value) = @_;
 
