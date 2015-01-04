@@ -1,0 +1,25 @@
+__RULES__
+< \/ /\
+3 home c iv
+3 shield % -
+3 x . iii
+2 iii v
+3 i [] x
+3 5. iv /\
+3 i : b
+3 .: c shield
+3 + :.: d
+2 1. iii
+2 ii vi
+< b 6.
+< iii d
+< iv home
+2 e 6.
+2 a \/
+< i sqrt
+2 ii a
+2 :: .
+< /\ 3.
+3 2. <> shield
+__END__
+key 607ef1d2a78bed611dcd2d7320976c75

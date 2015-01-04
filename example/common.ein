@@ -1,0 +1,8 @@
+size 6
+__BOARD__
+1. 2. 3. 4. 5. 6.
+a b c d e f
+i ii iii iv v vi
+. : .: :: :.: :::
+/\ \/ [] <> home shield
++ - x % = sqrt

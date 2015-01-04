@@ -1,11 +1,3 @@
-size 6
-__BOARD__
-1. 2. 3. 4. 5. 6.
-a b c d e f
-i ii iii iv v vi
-. : .: :: :.: :::
-/\ \/ [] <> home shield
-+ - x % = sqrt
 __RULES__
 = % 1.
 = f ii
@@ -30,3 +22,5 @@ __RULES__
 3 c :: \/
 2 1. x
 2 6. 4.
+__END__
+key 71ce581e54fac71407487a5b20d2eeda
