@@ -47,6 +47,14 @@ my %dispatch = (
         create (Distance => $_[1], $_[2], distance => $_[0]),
         create (Distance => $_[2], $_[1], distance => $_[0]),
     },
+    p => sub {
+        create ( Parity => $_[0], $_[1], parity => 0 ),
+        create ( Parity => $_[1], $_[0], parity => 0 ),
+    },
+    P => sub {
+        create ( Parity => $_[0], $_[1], parity => 1 ),
+        create ( Parity => $_[1], $_[0], parity => 1 ),
+    },
 );
 
 sub parse {
@@ -85,6 +93,21 @@ my %join_action = (
     "same d >" => sub {
         $_[2]->distance == 1 or return ();
         create( Left => $_[0],$_[1] ), create( Right => $_[1],$_[0] )
+    },
+    "d d" => sub {
+        my $p = $_[2]->distance + $_[3]->distance;
+        create ( Parity => $_[0], $_[1], parity => $p ),
+        create ( Parity => $_[1], $_[0], parity => $p ),
+    },
+    "d p" => sub {
+        my $p = $_[2]->distance;
+        create ( Parity => $_[0], $_[1], parity => $p ),
+        create ( Parity => $_[1], $_[0], parity => $p ),
+    },
+    "d P" => sub {
+        my $p = $_[2]->distance + 1;
+        create ( Parity => $_[0], $_[1], parity => $p ),
+        create ( Parity => $_[1], $_[0], parity => $p ),
     },
 );
 
@@ -163,6 +186,25 @@ sub to_string {
     my $self = shift;
     return join " ", $self->distance == 1 ? ("2") : ("d", $self->distance)
         , $self->src, $self->dst;
+};
+
+package Einstein::Rule::Parity;
+use Moo;
+
+extends 'Einstein::Rule';
+
+has parity => is => "ro", default => sub { 0 };
+
+sub apply {
+    my ($self, $pos, $field) = @_;
+    
+    my $p = ( $self->parity + $pos ) & 1;
+    return map { $p + 2 * $_ } 0 .. $field->size / 2;
+};
+
+sub sign {
+    my $self = shift;
+    $self->parity & 1 ? 'P' : 'p';
 };
 
 1;

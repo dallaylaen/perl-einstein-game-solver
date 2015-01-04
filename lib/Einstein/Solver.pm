@@ -106,6 +106,23 @@ sub fork {
     return \%found;
 };
 
+# TODO should be $rule->weight
+my %rule_weight  = (
+    '<' => 2,
+    '>' => 2,
+    '2' => 10,
+    '=' => 20,
+    'p' => 0.2,
+    'P' => 0.1
+);
+sub _rule_weight {
+    my $r = shift;
+    if ($r->sign eq 'd') {
+        return 10*$r->distance;
+    };
+    return $rule_weight{ $r->sign } || 1;
+};
+
 sub select_probe {
     my $self = shift;
 
@@ -116,11 +133,12 @@ sub select_probe {
     my %group;
     my %n_rules_2nd;
 
-    foreach (@list) {
-        $group{$_} = $self->board->group_n_of($_);
-        my @r = $self->rules->get_rules($_);
-        $n_rules{$_} = scalar @r;
-        $n_rules_group{ $group{$_} } += scalar @r;
+    foreach my $src (@list) {
+        $group{$src} = $self->board->group_n_of($src);
+        my @r = $self->rules->get_rules($src);
+        $n_rules{$src} = 0;
+        $n_rules{$src} += _rule_weight($_) for @r;
+        $n_rules_group{ $group{$src} } += $n_rules{$src};
     };
     foreach my $this (@list) {
         my @r = $self->rules->get_rules($this);
