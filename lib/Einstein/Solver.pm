@@ -41,7 +41,8 @@ sub search {
     $order ||= $self->select_probe;
     $depth ||= 0;
 
-    # warn "||| Search order: @$order";
+    warn "||| Search order: @$order"
+        unless $depth;
 
     return $board if !$board->unsolved;
 
@@ -54,13 +55,14 @@ sub search {
         foreach my $pos(@where) {
             my $t_board = $board->clone;
 
+            warn "...[$i] Trying $id => $pos";
             my $ret = $self->fork($id => $pos, $t_board);
             next unless $ret;
 
-            # warn ">>>[$i] Testing $id => $pos; got fixed: ".encode_json($ret);
+            warn ">>>[$i] Testing $id => $pos; got fixed: ".encode_json($ret);
             $ret = $self->search( $t_board, $order, $i );
             return $ret if $ret;
-            # warn "<<<[$i] $id => $pos - no luck";
+            warn "<<<[$i] $id => $pos - no luck";
         };
         last;
     };
@@ -97,7 +99,11 @@ sub fork {
 sub select_probe {
     my $self = shift;
 
-    return [ $self->board->list ];
+    my @list = $self->board->list;
+
+    @list = sort { scalar $self->rules->get_rules($b) <=> scalar $self->rules->get_rules( $a ) } @list;
+
+    return \@list;
 };
 
 

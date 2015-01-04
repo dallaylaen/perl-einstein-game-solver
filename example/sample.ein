@@ -4,7 +4,7 @@ __BOARD__
 a b c d e f
 i ii iii iv v vi
 . : .: :: :.: :::
-/\ \/ # <> home shield
+/\ \/ [] <> home shield
 + - x % = sqrt
 __RULES__
 = % 1.

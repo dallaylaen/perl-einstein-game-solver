@@ -9,6 +9,7 @@ use FindBin qw($Bin);
 use lib "$Bin/../lib";
 use Einstein::Solver;
 
+$Einstein::clean++;
 
 defined ($_ = <>) or die "Failed to read stdin: $!";
 
@@ -38,8 +39,6 @@ while (<>) {
 
     push @rules, $_;
 };
-
-warn Dumper( \@ids );
 
 $SIG{__DIE__} = \&Carp::confess;
 my $solver = Einstein::Solver->new;
